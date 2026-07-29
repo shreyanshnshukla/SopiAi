@@ -1,6 +1,6 @@
-# Friday: Personal Voice Assistant for Windows
+# Sopi: Personal Voice Assistant for Windows
 
-Friday is a sleek, personal desktop voice assistant that you can talk to out loud. It features low-latency voice I/O, local desktop control (opening apps, running shell commands, automation), file operations, web search, and a robust user-permission gating system for security.
+Sopi is a sleek, personal desktop voice assistant that you can talk to out loud. It features low-latency voice I/O, local desktop control (opening apps, running shell commands, automation), file operations, web search, and a robust user-permission gating system for security.
 
 Friday supports three backend brains:
 1. **Gemini API** (Google Generative AI - default, supports dynamic tool calling).
@@ -12,7 +12,7 @@ Friday supports three backend brains:
 ## Features
 
 * **Voice I/O**:
-  * **Wake-word Activation**: Continuous background microphone listening triggers Friday whenever you say *"Friday"*.
+  * **Wake-word Activation**: Continuous background microphone listening triggers Sopi whenever you say *"Sopi"*.
   * **Push-to-Talk**: Hit the **Spacebar** or click the glowing Visualizer Orb to start recording.
   * **Natural TTS**: Uses Microsoft Edge's realistic neural voices for speech output.
 * **OS & Desktop Control**:
