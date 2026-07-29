@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.O.P.I. — Stark HUD Interface</title>
+    <!-- Sci-fi and technical fonts from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome for high-quality icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Tech background grid lines -->
+    <div class="hud-grid-overlay"></div>
+    <div class="hud-scanline"></div>
+
+    <div class="glass-container">
+        <!-- Stark HUD Corner Brackets -->
+        <div class="hud-corner tl"></div>
+        <div class="hud-corner tr"></div>
+        <div class="hud-corner bl"></div>
+        <div class="hud-corner br"></div>
+
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <i class="fa-solid fa-circle-notch brand-icon"></i>
+                <h1>SOPI</h1>
+                <span class="version">AI v1.8</span>
+            </div>
+            <div class="connection-status" id="connection-status">
+                <span class="status-dot disconnected"></span>
+                <span class="status-text">SYSTEM_OFFLINE</span>
+            </div>
+        </header>
+
+        <!-- Main Body Grid -->
+        <main class="dashboard-grid">
+            <!-- Left Panel: 3D Dotted Particle Sphere -->
+            <section class="visualizer-section">
+                <div class="sphere-container" id="sopi-sphere-container">
+                    <canvas id="sopi-canvas" width="320" height="320"></canvas>
+                </div>
+                <div class="status-label">
+                    <h3 id="current-status-title">STANDBY</h3>
+                    <p id="current-status-desc">Click the sphere or press Space to engage Sopi</p>
+                </div>
+
+                <!-- Diagnostics Panel -->
+                <div class="hud-diagnostics">
+                    <div class="diag-row">
+                        <span class="diag-label">SYSTEM_CORE:</span>
+                        <span class="diag-val">SECURE</span>
+                    </div>
+                    <div class="diag-row">
+                        <span class="diag-label">NEURAL_NET:</span>
+                        <span class="diag-val" id="diag-brain-mode">ACTIVE</span>
+                    </div>
+                    <div class="diag-row">
+                        <span class="diag-label">AUDIO_STREAM:</span>
+                        <span class="diag-val" id="diag-audio-status">STANDBY</span>
+                    </div>
+                    <div class="diag-row">
+                        <span class="diag-label">INTEGRITY:</span>
+                        <span class="diag-val">100%</span>
+                    </div>
+                </div>
+
+                <div class="quick-settings-summary">
+                    <span class="pill"><i class="fa-solid fa-keyboard"></i> Hotkey: Space</span>
+                    <span class="pill" id="active-voice-pill"><i class="fa-solid fa-volume-high"></i> Voice: Andrew</span>
+                </div>
+                
+                <button class="expand-chat-btn" id="expand-chat-btn" title="Expand Chat Panel">
+                    <i class="fa-solid fa-message"></i> SHOW CHAT
+                </button>
+            </section>
+
+            <!-- Right Panel: Conversation Log -->
+            <section class="log-section">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-message"></i> Transcript & Action Logs</h2>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <button class="clear-btn" id="minimize-chat-btn" title="Minimize Chat Panel"><i class="fa-solid fa-chevron-right"></i></button>
+                        <button class="clear-btn" id="clear-transcript-btn" title="Clear logs"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+                <div class="transcript-viewport" id="transcript-viewport">
+                    <!-- Welcomer message -->
+                    <div class="log-entry system-entry">
+                        <div class="log-time">00:00</div>
+                        <div class="log-text">System: Welcome. Friday is standing by. Set up your Gemini API key in settings if you haven't already.</div>
+                    </div>
+                </div>
+                <div class="input-controls">
+                    <div class="input-wrapper">
+                        <input type="text" id="text-input" placeholder="Type a message or speak..." autocomplete="off">
+                        <button class="send-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                    <button class="settings-toggle-btn" id="settings-toggle-btn" title="Settings">
+                        <i class="fa-solid fa-sliders"></i>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal (For Desktop Actions) -->
+    <div class="modal-backdrop" id="confirmation-modal">
+        <div class="modal-card">
+            <div class="modal-header warning">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h3>Permission Required</h3>
+            </div>
+            <div class="modal-body">
+                <p>Friday is requesting permission to perform the following action:</p>
+                <div class="action-payload" id="action-payload-content">
+                    Loading payload...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="confirm-deny-btn">Deny</button>
+                <button class="btn btn-secondary" id="confirm-always-btn">Always Approve</button>
+                <button class="btn btn-primary" id="confirm-allow-btn">Allow Once</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel (Drawer) -->
+    <div class="settings-drawer" id="settings-drawer">
+        <div class="drawer-header">
+            <h2><i class="fa-solid fa-gear"></i> Settings</h2>
+            <button class="close-drawer-btn" id="close-drawer-btn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="drawer-content">
+            <form id="settings-form">
+                <!-- LLM Provider Selection -->
+                <div class="form-group">
+                    <label for="settings-provider">LLM Brain Provider</label>
+                    <select id="settings-provider">
+                        <option value="gemini">Gemini API (Google AI)</option>
+                        <option value="grok">Grok API (xAI)</option>
+                        <option value="ollama">Ollama (Local LLM)</option>
+                        <option value="mock">Offline Mock Mode (No Key Required)</option>
+                    </select>
+                </div>
+
+                <!-- API Key (Gemini Specific) -->
+                <div class="form-group" id="gemini-key-group">
+                    <label for="settings-api-key">Gemini API Key</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="settings-api-key" placeholder="Enter your Gemini API key...">
+                        <button type="button" class="toggle-password" id="toggle-key-visibility"><i class="fa-solid fa-eye"></i></button>
+                    </div>
+                    <small>Get a key from Google AI Studio</small>
+                </div>
+
+                <!-- API Key (Grok Specific) -->
+                <div class="form-group" id="grok-key-group" style="display: none;">
+                    <label for="settings-grok-key">Grok API Key</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="settings-grok-key" placeholder="Enter your Grok API key...">
+                        <button type="button" class="toggle-password" id="toggle-grok-key-visibility"><i class="fa-solid fa-eye"></i></button>
+                    </div>
+                    <small>Get a key from the xAI Console</small>
+                    
+                    <div style="margin-top: 15px;">
+                        <label for="settings-grok-model">Grok Model Name</label>
+                        <input type="text" id="settings-grok-model" placeholder="e.g. grok-4.5, grok-2, grok-beta">
+                    </div>
+                </div>
+
+                <!-- Ollama Configuration Group -->
+                <div id="ollama-config-group" style="display: none;">
+                    <div class="form-group">
+                        <label for="settings-ollama-url">Ollama Server URL</label>
+                        <input type="text" id="settings-ollama-url" placeholder="http://localhost:11434">
+                    </div>
+                    <div class="form-group">
+                        <label for="settings-ollama-model">Ollama Model</label>
+                        <input type="text" id="settings-ollama-model" placeholder="e.g. llama3, phi3, qwen2">
+                        <small>Run <code>ollama list</code> in console to see models</small>
+                    </div>
+                </div>
+
+                <!-- TTS Voice Selector -->
+                <div class="form-group">
+                    <label for="settings-voice">Voice Output</label>
+                    <select id="settings-voice">
+                        <option value="en-US-AndrewNeural">Microsoft Andrew (Male - US)</option>
+                        <option value="en-US-EmmaNeural">Microsoft Emma (Female - US)</option>
+                        <option value="en-GB-SoniaNeural">Microsoft Sonia (Female - UK)</option>
+                        <option value="en-GB-RyanNeural">Microsoft Ryan (Male - UK)</option>
+                        <option value="en-AU-WilliamNeural">Microsoft William (Male - AU)</option>
+                    </select>
+                </div>
+
+                <!-- Allowed Directories -->
+                <div class="form-group">
+                    <label>Allowed Folders for File Operations</label>
+                    <div class="list-editor" id="allowed-dirs-list">
+                        <!-- Filled by JS -->
+                    </div>
+                    <div class="add-item-row">
+                        <input type="text" id="add-dir-input" placeholder="e.g. C:\Users\MyName\Documents">
+                        <button type="button" class="add-item-btn" id="add-dir-btn"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <!-- Pre-Approved Actions -->
+                <div class="form-group">
+                    <label>Pre-Approved Desktop Actions</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="approve-open-app"> Launch Applications
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="approve-web-search"> Web Searches & Scrapes
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="approve-read-file"> Read Allow-listed Files
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="approve-write-file"> Write/Edit Files (Always Gated for Destructive Actions)
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="save-settings-btn" id="save-settings-btn">Save Changes</button>
+                <button type="button" class="btn btn-secondary" id="view-logs-btn" style="width: 100%; margin-top: 15px;"><i class="fa-solid fa-receipt"></i> View Safety Audit Logs</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Logs Viewer Modal -->
+    <div class="modal-backdrop" id="logs-modal">
+        <div class="modal-card" style="max-width: 800px; width: 90%; max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <i class="fa-solid fa-receipt" style="color: var(--accent-blue); font-size: 22px;"></i>
+                <h3 style="color: white; margin-left: 10px;">Safety Audit Logs</h3>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
+                <div id="logs-list-content" style="white-space: pre-wrap; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); padding: 15px; border-radius: 8px;">
+                    Loading safety logs...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="close-logs-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden HTML5 Audio Element for playing backend response audio -->
+    <audio id="tts-audio-player"></audio>
+    <script src="app.js"></script>
+</body>
+</html>
