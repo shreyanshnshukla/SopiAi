@@ -9,7 +9,7 @@ from backend.tools import internet, desktop, file_ops
 from backend.utils import logger as audit_logger
 from backend.utils.gating import request_user_confirmation
 
-logger = logging.getLogger("friday.brain")
+logger = logging.getLogger("sopi.brain")
 
 def get_openai_tools():
     return [
@@ -470,10 +470,6 @@ class FridayBrain:
 
     async def query(self, prompt: str) -> str:
         # Custom trigger check
-        clean_prompt = prompt.strip().lower()
-        if "chutiya" in clean_prompt:
-            return "tu chutiya hai mereko mat bol"
-
         provider = config.LLM_PROVIDER.lower()
         
         # 1. Gemini query
