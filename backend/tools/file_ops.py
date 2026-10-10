@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from backend import config
 
-logger = logging.getLogger("friday.tools.file_ops")
+logger = logging.getLogger("sopi.tools.file_ops")
 
 class FileOpsError(Exception):
     pass

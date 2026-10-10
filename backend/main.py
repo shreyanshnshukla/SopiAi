@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import edge_tts
 
 from backend import config
-from backend.brain import FridayBrain
+from backend.brain import SopiBrain
 from backend.utils import gating
 
 # Configure logger
@@ -33,7 +33,7 @@ AUDIO_DIR = config.BASE_DIR / "frontend" / "audio"
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
 # Initialize Brain
-brain = FridayBrain()
+brain = SopiBrain()
 
 class ConfigUpdate(BaseModel):
     gemini_key: str = None
@@ -109,7 +109,7 @@ async def get_config():
 
 @app.get("/api/logs")
 async def get_logs():
-    log_file = config.BASE_DIR / "friday_audit_log.json"
+    log_file = config.BASE_DIR / "sopi_audit_log.json"
     if log_file.exists():
         try:
             with open(log_file, "r", encoding="utf-8") as f:
@@ -155,7 +155,7 @@ async def websocket_endpoint(websocket: WebSocket):
         # Send initial connection state
         await websocket.send_json({
             "type": "system",
-            "message": f"Connected to Friday Backend. Active Brain: {config.LLM_PROVIDER.upper()}."
+            "message": f"Connected to Sopi Backend. Active Brain: {config.LLM_PROVIDER.upper()}."
         })
         
         while True:

@@ -3,7 +3,7 @@ import asyncio
 import logging
 from backend import config
 
-logger = logging.getLogger("friday.utils.gating")
+logger = logging.getLogger("sopi.utils.gating")
 
 # Shared state between WebSocket server and tools
 active_connections = []

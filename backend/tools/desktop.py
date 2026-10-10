@@ -5,7 +5,7 @@ import logging
 import pyautogui
 from backend import config
 
-logger = logging.getLogger("friday.tools.desktop")
+logger = logging.getLogger("sopi.tools.desktop")
 
 # Disable PyAutoGUI delay where possible to make actions quick, but add a small safety pause
 pyautogui.PAUSE = 0.5

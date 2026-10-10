@@ -1,4 +1,4 @@
-// Friday Frontend Application Logic
+// Sopi Frontend Application Logic
 
 // WebSocket Connection
 let socket = null;
@@ -9,7 +9,7 @@ if (window.location.protocol === 'file:') {
 }
 
 // UI State Elements
-const orb = document.getElementById('sopi-sphere-container') || document.getElementById('friday-orb');
+const orb = document.getElementById('sopi-sphere-container');
 const currentStatusTitle = document.getElementById('current-status-title');
 const currentStatusDesc = document.getElementById('current-status-desc');
 const connectionStatus = document.getElementById('connection-status');
@@ -238,7 +238,7 @@ function handleSocketMessage(data) {
             break;
         case 'wake_trigger':
             // Triggered by python background wake word listener
-            logToTranscript('System', 'Wake word detected. Friday is listening...', 'system');
+            logToTranscript('System', 'Wake word detected. Sopi is listening...', 'system');
             startListening();
             break;
         case 'confirm_request':

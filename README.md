@@ -1,123 +1,84 @@
-# Sopi: Personal Voice Assistant for Windows
+# Sopi — Voice-Controlled Desktop AI Agent
 
-Sopi is a sleek, personal desktop voice assistant that you can talk to out loud. It features low-latency voice I/O, local desktop control (opening apps, running shell commands, automation), file operations, web search, and a robust user-permission gating system for security.
+**Live web demo:** https://shreyanshnshukla.github.io/SopiAi/
 
-Friday supports three backend brains:
-1. **Gemini API** (Google Generative AI - default, supports dynamic tool calling).
-2. **Ollama** (Local offline LLMs like Llama3/Qwen/Phi).
-3. **Offline Mock Mode** (A rule-based offline demo brain that requires no key or local model).
+Sopi is a personal voice assistant for Windows that you talk to out loud. It plans with an LLM, then **acts through tools**: launching apps, running shell commands, typing, managing files and searching the web. Every risky action is **permission-gated** and sandboxed by folder and app policies.
 
----
+> The live demo runs in the browser with the same tools, allow-list and permission gating, but acts on a sandboxed **virtual desktop** so it is safe to host publicly. Use it in offline demo mode, or paste your own free Gemini API key for the full LLM brain. The key stays in your browser tab.
 
 ## Features
 
-* **Voice I/O**:
-  * **Wake-word Activation**: Continuous background microphone listening triggers Sopi whenever you say *"Sopi"*.
-  * **Push-to-Talk**: Hit the **Spacebar** or click the glowing Visualizer Orb to start recording.
-  * **Natural TTS**: Uses Microsoft Edge's realistic neural voices for speech output.
-* **OS & Desktop Control**:
-  * Launch applications (e.g. Chrome, Notepad, Paint).
-  * Safe shell command executor (run build scripts, query system status).
-  * Web search (dynamic web scraping of Google or DuckDuckGo) and fetch text from specific URLs.
-  * PyAutoGUI mouse/keyboard control (typing text, clicking coordinates, key combinations).
-* **Safety First**:
-  * **Strict Directory Allow-list**: Friday is locked down to specific directories (defaults to workspace, Documents, and Desktop). All file reads/writes/edits outside these folders are blocked immediately.
-  * **Application Deny-list**: Block launch of risky tools (e.g., cmd.exe, PowerShell, Registry Editor).
-  * **Permission Gating**: Every desktop control action blocks and opens a visual permission dialog requesting your choice of **Allow Once**, **Deny**, or **Always Approve** (pre-approval).
-  * **No Pre-approval for Destruction**: File deletion (`delete_file`, `delete_directory`) can *never* be pre-approved; they will *always* trigger a manual prompt.
-  * **Safety Audit Logs**: Every action is saved to `friday_audit_log.json` and visible via the built-in logs viewer in the settings panel.
+- **Voice in, voice out:** wake word ("Sopi"), push-to-talk (Spacebar) and natural neural TTS via Microsoft Edge voices.
+- **LLM tool calling:** the model chooses from 12 tools: `web_search`, `fetch_page`, `open_app`, `run_command`, `browser_open`, `pyautogui_control`, `list_directory`, `read_file`, `create_file`, `edit_file`, `delete_file` and `delete_directory`.
+- **Swappable brains:** Gemini API (default, with automatic model detection), xAI Grok, local **Ollama** models (Llama 3, Qwen, Phi), or an offline rule-based mock brain that needs no key.
+- **Long-term memory:** remembers your name and preferences across sessions (`sopi_memories.json`).
+- **Safety first:**
+  - **Directory allow-list:** file access is limited to the workspace, Documents and Desktop.
+  - **Application deny-list:** `cmd.exe`, PowerShell, Registry Editor and similar tools are blocked.
+  - **Permission gating:** every desktop action opens a dialog with **Allow once / Deny / Always approve**.
+  - **Audit log:** every action and decision is written to `sopi_audit_log.json` and viewable in the UI.
 
----
-
-## Quick Start on Windows
-
-1. Double-click [run.bat](file:///C:/Users/SHREYANSH/.gemini/antigravity/scratch/friday/run.bat) (or run it in the command prompt).
-2. The script will automatically create a Python virtual environment, install dependencies, spin up the FastAPI server, open the browser interface, and start the background wake-word listener.
-3. Open the **Settings panel** (sliders icon in the bottom-right corner):
-   * Select your **LLM Brain Provider**:
-     * For **Gemini**: Paste your API key from Google AI Studio.
-     * For **Mock**: No key needed (perfect for testing voice loops immediately).
-     * For **Ollama**: Specify your local URL and active model name.
-   * Click **Save Changes**.
-4. To speak, press the **Spacebar** or say **"Friday"** out loud. Say *"Who are you?"* or *"Search the web for SpaceX"*!
-
----
-
-## File Structure
+## Architecture
 
 ```
-friday/
-├── run.bat                 # One-click Windows launcher script
-├── requirements.txt        # Python package declarations
-├── README.md               # Setup & extension guide
-├── friday_memories.json    # Persistent memories (name, preferences)
-├── friday_audit_log.json   # Safety log output
+ Microphone ─▶ Web Speech STT ─┐                          ┌─▶ tools/desktop.py   (apps, PyAutoGUI, shell)
+ Wake word (PyAudio) ──────────┼─▶ FastAPI + WebSocket ─▶ brain.py ─▶ gating ─┼─▶ tools/file_ops.py  (allow-listed files)
+ Text input ───────────────────┘        (main.py)         (LLM router)         └─▶ tools/internet.py  (search, scraping)
+                                            │
+                       Edge TTS ◀── reply ──┘
+```
+
+## Run the desktop app (Windows)
+
+1. Install Python 3.10+.
+2. Create a `.env` file in the project root:
+   ```
+   GEMINI_API_KEY=your-key-here
+   LLM_PROVIDER=gemini        # gemini | grok | ollama | mock
+   ```
+3. Double-click `run.bat`. It creates a virtual environment, installs `requirements.txt`, starts the FastAPI server on `http://127.0.0.1:8000`, opens the UI and starts the wake-word listener.
+4. Press **Space** or say **"Sopi"**, then try *"Who are you?"*, *"Open Notepad"* or *"Search the web for SpaceX"*.
+
+Manual start:
+
+```bash
+python -m venv venv
+venv\Scripts\pip install -r requirements.txt
+venv\Scripts\uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+## Project structure
+
+```
+SopiAi/
+├── run.bat                  # One-click Windows launcher
+├── requirements.txt
 ├── backend/
-│   ├── main.py              # FastAPI server & Websocket router
-│   ├── config.py            # Allowed folders, blocked apps, current voice config
-│   ├── brain.py             # LLM router (Gemini/Ollama/Mock) & Function Calling dispatcher
+│   ├── main.py              # FastAPI server, WebSocket router, TTS
+│   ├── config.py            # Allow-listed folders, blocked apps, provider settings
+│   ├── brain.py             # LLM router (Gemini / Grok / Ollama / mock) + tool-calling loop
 │   ├── tools/
-│   │   ├── internet.py      # Google/DuckDuckGo searches & webpage text scraper
-│   │   ├── desktop.py       # Application launching & PyAutoGUI simulation
-│   │   └── file_ops.py      # File system listings, reading, writing, and deletions
+│   │   ├── internet.py      # Web search and page text extraction
+│   │   ├── desktop.py       # App launching, shell commands, PyAutoGUI control
+│   │   └── file_ops.py      # Allow-listed file operations
 │   └── utils/
-│       ├── voice_detector.py# PyAudio background wake-word detector
-│       ├── gating.py        # Asynchronous user-approval gating
-│       └── logger.py        # Audit logs compiler
-└── frontend/
-    ├── index.html           # Glassmorphic control dashboard
-    ├── style.css            # Dark neon styles & visualizer keyframe animations
-    ├── app.js               # Web Speech STT, Websocket events, and modal interactions
-    └── audio/               # Directory containing temp TTS response files
+│       ├── gating.py        # Async user-approval gating
+│       ├── logger.py        # Audit log
+│       └── voice_detector.py# Background wake-word listener
+├── frontend/                # Desktop UI (HTML/CSS/JS, 3D dotted-sphere visualizer)
+└── web/                     # Static browser demo deployed to GitHub Pages
 ```
+
+## Adding a tool
+
+1. Write a function with type hints and a docstring in `backend/tools/` (Gemini reads both to decide when to call it).
+2. Route it in `run_tool_safely` in `backend/brain.py` so it goes through permission gating, and add it to the tool list in `init_brain`.
+3. Optionally, add it to the pre-approval settings in `frontend/app.js`.
+
+## Web demo
+
+`web/` is a dependency-free static site (ES modules) that reuses Sopi's tool schema, safety policy and UI. The Gemini brain calls the Gemini REST API directly from the browser with function calling. The offline brain is rule-based. Every push to `main` deploys it to GitHub Pages through `.github/workflows/pages.yml`.
 
 ---
 
-## How to Extend Friday with New Tools
-
-Friday utilizes Gemini's native **Function Calling** capabilities. The Gemini Python SDK automatically extracts tool definitions, parameters, and descriptions directly from Python functions via **Type Annotations** and **Docstrings**.
-
-To add a new tool to Friday, follow these three steps:
-
-### 1. Create the Tool Function
-Add your function in one of the tools modules, or create a new file in `backend/tools/`.
-Ensure it has a descriptive **docstring** (used by Gemini to understand when to invoke it) and **type hints** for all parameters.
-
-*Example (in `backend/tools/desktop.py`):*
-```python
-def check_disk_space(drive: str = "C") -> str:
-    """Returns the free disk space on a specific Windows drive.
-    
-    Args:
-        drive: The drive letter to check (default is 'C').
-    """
-    import shutil
-    try:
-        total, used, free = shutil.disk_usage(f"{drive}:\\")
-        free_gb = free // (2**30)
-        return f"Drive {drive}: has {free_gb} GB of free space."
-    except Exception as e:
-        return f"Failed to check disk space: {e}"
-```
-
-### 2. Register the Tool in the Safety Gating Router
-Open [backend/brain.py](file:///C:/Users/SHREYANSH/.gemini/antigravity/scratch/friday/backend/brain.py):
-1. Import your function.
-2. Add a routing check inside the `run_tool_safely` function:
-   ```diff
-          elif tool_name == "delete_directory":
-              result = file_ops.delete_directory(**args)
-   +      elif tool_name == "check_disk_space":
-   +          result = desktop.check_disk_space(**args)
-   ```
-3. Add the function reference to the `tools_list` array inside `init_brain` so Gemini is aware of it:
-   ```diff
-                      tools_list = [
-                          internet.web_search,
-                          internet.fetch_page,
-   +                      desktop.check_disk_space,
-                          desktop.open_app,
-   ```
-
-### 3. Add to Pre-Approved Settings Checkbox (Optional)
-If you want to allow the user to pre-approve this tool, add a checkbox for it in the settings panel of [index.html](file:///C:/Users/SHREYANSH/.gemini/antigravity/scratch/friday/frontend/index.html) and bind it in [app.js](file:///C:/Users/SHREYANSH/.gemini/antigravity/scratch/friday/frontend/app.js) inside the configurations list.
+Built by [Shreyansh Nandan Shukla](https://github.com/shreyanshnshukla).

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sopi AI – Voice Agent Web Demo</title>
+  <meta name="description" content="Talk to Sopi, a voice-controlled AI agent with LLM tool calling and permission-gated actions, running on a sandboxed virtual desktop in your browser.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23000'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23fff' stroke-width='4' stroke-dasharray='6 5'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="hud-grid-overlay"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <i class="fa-solid fa-circle-notch brand-icon"></i>
+      <span class="brand-name">S.O.P.I.</span>
+      <span class="pill">WEB DEMO</span>
+    </div>
+    <div class="topbar-actions">
+      <span class="pill" id="brain-pill"><span class="dot"></span> <span id="brain-pill-text">OFFLINE DEMO BRAIN</span></span>
+      <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings"><i class="fa-solid fa-sliders"></i></button>
+      <a class="icon-btn" href="https://github.com/shreyanshnshukla/SopiAi" target="_blank" rel="noreferrer" title="Source on GitHub" aria-label="Source on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+  </header>
+
+  <div class="intro" id="intro">
+    <i class="fa-solid fa-shield-halved"></i>
+    <span>The real Sopi controls your Windows PC. This browser demo gives it a <strong>sandboxed virtual desktop</strong> instead, with the same tools, allow-list and permission gating. Add a free Gemini API key in <button class="link" id="intro-settings">settings</button> for the full AI brain.</span>
+    <button class="icon-btn small" id="intro-close" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <main class="layout">
+    <!-- Left: voice core -->
+    <section class="panel core">
+      <div class="sphere-wrap" id="sphere-wrap" role="button" tabindex="0" aria-label="Push to talk">
+        <canvas id="sopi-canvas" width="320" height="320"></canvas>
+      </div>
+      <div class="status">
+        <h2 id="status-title">STANDBY</h2>
+        <p id="status-desc">Click the sphere or hold Space to talk</p>
+      </div>
+      <div class="diag">
+        <div><span>BRAIN</span><b id="diag-brain">OFFLINE DEMO</b></div>
+        <div><span>TOOLS</span><b id="diag-tools">12</b></div>
+        <div><span>GATING</span><b>ENFORCED</b></div>
+        <div><span>MEMORY</span><b id="diag-memory">—</b></div>
+      </div>
+      <div class="chips" id="chips"></div>
+    </section>
+
+    <!-- Center: virtual desktop -->
+    <section class="panel desktop">
+      <div class="panel-header">
+        <h3><i class="fa-solid fa-desktop"></i> Virtual Desktop</h3>
+        <div class="app-tabs" role="tablist">
+          <button data-app="notepad" role="tab"><i class="fa-solid fa-file-lines"></i> Notepad</button>
+          <button data-app="terminal" role="tab"><i class="fa-solid fa-terminal"></i> Terminal</button>
+          <button data-app="files" role="tab"><i class="fa-solid fa-folder"></i> Files</button>
+          <button data-app="browser" role="tab"><i class="fa-solid fa-globe"></i> Browser</button>
+        </div>
+      </div>
+      <div class="window" id="win-notepad" data-app="notepad">
+        <div class="win-title" id="notepad-title">Untitled.txt — Notepad</div>
+        <textarea id="notepad-text" spellcheck="false" aria-label="Notepad"></textarea>
+      </div>
+      <div class="window" id="win-terminal" data-app="terminal">
+        <div class="win-title">sopi-sandbox — Terminal</div>
+        <pre id="terminal-out">Sopi sandbox shell. Type "help" via Sopi to list commands.</pre>
+      </div>
+      <div class="window" id="win-files" data-app="files">
+        <div class="win-title">Files</div>
+        <div id="file-tree" class="file-tree"></div>
+      </div>
+      <div class="window" id="win-browser" data-app="browser">
+        <div class="win-title" id="browser-title">Browser</div>
+        <div id="browser-body" class="browser-body"><p class="muted">Search results and pages Sopi opens appear here.</p></div>
+      </div>
+    </section>
+
+    <!-- Right: transcript -->
+    <section class="panel chat">
+      <div class="panel-header">
+        <h3><i class="fa-solid fa-message"></i> Transcript & Action Log</h3>
+        <button class="icon-btn small" id="clear-btn" title="Clear transcript" aria-label="Clear transcript"><i class="fa-solid fa-trash-can"></i></button>
+      </div>
+      <div class="transcript" id="transcript" aria-live="polite"></div>
+      <form class="input-row" id="input-form">
+        <button type="button" class="icon-btn" id="mic-btn" title="Push to talk" aria-label="Push to talk"><i class="fa-solid fa-microphone"></i></button>
+        <input id="text-input" type="text" placeholder="Type a command or speak…" autocomplete="off" aria-label="Message">
+        <button type="submit" class="icon-btn" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">Built by <a href="https://github.com/shreyanshnshukla" target="_blank" rel="noreferrer">Shreyansh Nandan Shukla</a> · Python/FastAPI desktop agent · <a href="https://github.com/shreyanshnshukla/SopiAi" target="_blank" rel="noreferrer">Source</a></footer>
+
+  <!-- Permission gate -->
+  <div class="modal" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <div class="modal-card">
+      <div class="modal-head"><i class="fa-solid fa-shield-halved"></i> <span id="gate-title">PERMISSION REQUIRED</span></div>
+      <p>Sopi wants to run:</p>
+      <pre id="gate-payload"></pre>
+      <div class="modal-actions">
+        <button class="btn" id="gate-deny">Deny</button>
+        <button class="btn" id="gate-always">Always approve</button>
+        <button class="btn primary" id="gate-allow">Allow once</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings drawer -->
+  <aside class="drawer" id="drawer" aria-label="Settings">
+    <div class="drawer-head">
+      <h3>SETTINGS</h3>
+      <button class="icon-btn small" id="drawer-close" aria-label="Close settings"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <label class="field-label">Brain</label>
+    <div class="seg">
+      <label><input type="radio" name="brain" value="offline" checked> Offline demo</label>
+      <label><input type="radio" name="brain" value="gemini"> Gemini</label>
+    </div>
+    <div id="gemini-fields">
+      <label class="field-label" for="api-key">Gemini API key</label>
+      <input id="api-key" type="password" placeholder="AIza…" autocomplete="off">
+      <p class="hint">Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com/apikey</a>. It is kept in this tab's memory only and sent directly to Google — never to any other server.</p>
+      <button class="btn primary" id="connect-btn">Connect</button>
+      <p class="hint" id="gemini-status"></p>
+    </div>
+    <label class="field-label">Voice</label>
+    <label class="check"><input type="checkbox" id="tts-toggle" checked> Speak replies aloud</label>
+    <label class="field-label">Pre-approved actions</label>
+    <div id="preapproved" class="hint">None</div>
+    <button class="btn" id="reset-btn"><i class="fa-solid fa-rotate-left"></i> Reset virtual desktop & memory</button>
+  </aside>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

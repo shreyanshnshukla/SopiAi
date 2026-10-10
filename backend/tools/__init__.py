@@ -1,1 +1,1 @@
-# Tools package for Friday Voice Assistant
+# Tools package for Sopi Voice Assistant

@@ -1,0 +1,21 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Runtime data (created on first run)
+sopi_memories.json
+sopi_audit_log.json
+friday_memories.json
+friday_audit_log.json
+frontend/audio/*.mp3
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import urllib.parse
 import logging
 
-logger = logging.getLogger("friday.tools.internet")
+logger = logging.getLogger("sopi.tools.internet")
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 

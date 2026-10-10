@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from backend import config
 
-logger = logging.getLogger("friday.utils.logger")
+logger = logging.getLogger("sopi.utils.logger")
 
 def log_action(command: str, tool_name: str, arguments: dict, status: str, result: str):
     """Appends an audited action entry to the local JSON log file.

@@ -35,9 +35,9 @@ DENY_LIST_APPS = [
 PRE_APPROVED_ACTIONS = [] # Filled dynamically by the UI settings
 
 # Audio config
-WAKE_WORD = "friday"
+WAKE_WORD = "sopi"
 PTT_SHORTCUT = "ctrl+space"
 
 # Logs
-LOG_FILE = BASE_DIR / "friday_audit_log.json"
-MEMORIES_FILE = BASE_DIR / "friday_memories.json"
+LOG_FILE = BASE_DIR / "sopi_audit_log.json"
+MEMORIES_FILE = BASE_DIR / "sopi_memories.json"

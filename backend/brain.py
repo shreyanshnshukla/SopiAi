@@ -250,7 +250,7 @@ async def run_tool_safely(tool_name: str, args: dict, command: str) -> str:
         return f"Error executing tool safely: {e}"
 
 
-class FridayBrain:
+class SopiBrain:
     def __init__(self):
         self.api_key = config.GEMINI_API_KEY
         self.grok_key = getattr(config, "GROK_API_KEY", "")
@@ -266,7 +266,7 @@ class FridayBrain:
     def init_brain(self):
         """Initializes the active LLM provider based on settings."""
         provider = config.LLM_PROVIDER.lower()
-        logger.info(f"Initializing Friday brain with provider: {provider}")
+        logger.info(f"Initializing Sopi brain with provider: {provider}")
         
         if provider == "gemini":
             if self.api_key:
@@ -323,7 +323,7 @@ class FridayBrain:
                 logger.warning("No Grok API key provided. Set GROK_API_KEY in settings.")
                 
         elif provider == "mock":
-            logger.info("Friday brain running in offline Mock Demo mode.")
+            logger.info("Sopi brain running in offline Mock Demo mode.")
             return True
             
         return False
